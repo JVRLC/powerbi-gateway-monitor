@@ -1,62 +1,62 @@
-# Tester et exécuter le projet
+# Testing and running the project
 
-Aide-mémoire des commandes utiles. Contexte important : le développement se fait sur
-**macOS**, sans machine Windows disponible. Les collecteurs utilisent des cmdlets
-Windows-only (`Get-Service`, `Get-WinEvent`) qui n'existent pas dans PowerShell Core
-sur macOS/Linux — ils ne peuvent donc **pas** être exécutés directement en local.
-C'est pour ça que chaque collecteur a un harnais de test mocké dans `tests/`.
+Command reference. Important context: development happens on **macOS**, with no
+Windows machine available. The collectors use Windows-only cmdlets (`Get-Service`,
+`Get-WinEvent`) that don't exist in PowerShell Core on macOS/Linux — so they
+**cannot** be run directly locally. That's why every collector has a mocked test
+harness under `tests/`.
 
 ## Config
 
-Les collecteurs lisent `config/config.json` (nom du service, process, dossier de
-sortie, intervalle de la tâche planifiée...). Ce fichier est gitignored — sur le
-serveur réel, il faut le créer une fois à partir de l'exemple versionné :
+Collectors read `config/config.json` (service name, process name, output dir,
+scheduled task interval...). This file is gitignored — on the real server, create
+it once from the versioned example:
 
 ```powershell
 Copy-Item config\config.example.json config\config.json
-# puis ajuster les valeurs si besoin
+# then adjust the values if needed
 ```
 
-En local (mocks) et si `config/config.json` est absent, `lib/Config.ps1` retombe
-automatiquement sur `config.example.json` avec un avertissement — pas besoin de le
-créer pour lancer les tests.
+Locally (mocks), if `config/config.json` is missing, `lib/Config.ps1` automatically
+falls back to `config.example.json` with a warning — no need to create it to run
+the tests.
 
-## Prérequis
+## Prerequisites
 
-PowerShell Core (`pwsh`) doit être installé :
+PowerShell Core (`pwsh`) must be installed:
 
 ```bash
 command -v pwsh || brew install --cask powershell
 ```
 
-## Tester les collecteurs en local (via les mocks)
+## Testing collectors locally (via mocks)
 
 ```bash
 cd ~/Desktop/powerbi-gateway-monitor
 
-# Gateway health — scénario sain
+# Gateway health — healthy scenario
 pwsh ./tests/Test-GatewayHealth.Mock.ps1 -Scenario healthy
 
-# Gateway health — scénario en panne
+# Gateway health — down scenario
 pwsh ./tests/Test-GatewayHealth.Mock.ps1 -Scenario down
 
-# Sessions RDP (logon/logoff, succès/échec RDP)
+# RDP sessions (logon/logoff, RDP success/failure)
 pwsh ./tests/Test-RdpSessions.Mock.ps1
 
-# Métriques système (CPU/RAM/disque)
+# System metrics (CPU/RAM/disk)
 pwsh ./tests/Test-SystemMetrics.Mock.ps1
 
-# Runner (les 3 collecteurs en séquence)
+# Runner (all 3 collectors in sequence)
 pwsh ./tests/Test-RunCollectors.Mock.ps1
 
-# Runner — vérifie l'isolation d'erreur (un collecteur échoue, les autres tournent quand même)
+# Runner — verifies error isolation (one collector fails, the others still run)
 pwsh ./tests/Test-RunCollectors.Mock.ps1 -FailGateway
 ```
 
-⚠️ Ne jamais lancer directement `pwsh ./collectors/Collect-GatewayHealth.ps1`,
-`Collect-RdpSessions.ps1`, `Collect-SystemMetrics.ps1` ou `Run-Collectors.ps1` sur
-macOS — ils échoueront avec une erreur du type `Get-Service: term not recognized`.
-Toujours passer par les scripts de `tests/`.
+⚠️ Never run `pwsh ./collectors/Collect-GatewayHealth.ps1`,
+`Collect-RdpSessions.ps1`, `Collect-SystemMetrics.ps1`, or `Run-Collectors.ps1`
+directly on macOS — they'll fail with an error like `Get-Service: term not
+recognized`. Always go through the scripts in `tests/`.
 
 ## Lint (PSScriptAnalyzer)
 
@@ -71,17 +71,17 @@ Get-ChildItem -Recurse -Filter "*.ps1" -Path . |
 '
 ```
 
-Tourne aussi automatiquement en CI (GitHub Actions, `.github/workflows/lint.yml`) sur
-chaque push/PR vers `main`. `PSAvoidUsingWriteHost` est exclu volontairement : les
-collecteurs utilisent `Write-Host` pour leurs messages de statut, et `Write-Output`
-polluerait le flux que `Run-Collectors.ps1` utilise pour détecter les erreurs.
+Also runs automatically in CI (GitHub Actions, `.github/workflows/lint.yml`) on
+every push/PR to `main`. `PSAvoidUsingWriteHost` is excluded on purpose: the
+collectors use `Write-Host` for their status messages, and `Write-Output` would
+pollute the stream `Run-Collectors.ps1` relies on to detect errors.
 
-## Vérifier la syntaxe d'un script sans l'exécuter
+## Checking a script's syntax without running it
 
 ```bash
 pwsh -NoProfile -Command '
 $errors = $null; $tokens = $null
-[System.Management.Automation.Language.Parser]::ParseFile("collectors/NOM_DU_FICHIER.ps1", [ref]$tokens, [ref]$errors) | Out-Null
+[System.Management.Automation.Language.Parser]::ParseFile("collectors/FILE_NAME.ps1", [ref]$tokens, [ref]$errors) | Out-Null
 if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Host $_.Message } } else { Write-Host "No syntax errors" }
 '
 ```
@@ -89,31 +89,31 @@ if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Host $_.Message } } 
 ## Git
 
 ```bash
-git status --short          # voir ce qui a changé
-git diff                    # voir le détail des changements
-git add <fichier>           # stager un fichier précis
-git commit -m "message"     # créer un commit
-git log --oneline -5        # voir les derniers commits
+git status --short          # see what changed
+git diff                    # see the detail of changes
+git add <file>               # stage a specific file
+git commit -m "message"     # create a commit
+git log --oneline -5        # see the last commits
 ```
 
-## Sur le vrai serveur Windows (une fois disponible)
+## On the real Windows server (once available)
 
-Exécution réelle des collecteurs (le service `PBIEgwService` doit être installé) :
+Real execution of the collectors (the `PBIEgwService` service must be installed):
 
 ```powershell
-.\Run-Collectors.ps1                   # lance les 3 collecteurs en séquence
+.\Run-Collectors.ps1                   # runs all 3 collectors in sequence
 .\collectors\Collect-GatewayHealth.ps1
-.\collectors\Collect-RdpSessions.ps1   # nécessite des droits admin (lecture du log Security)
+.\collectors\Collect-RdpSessions.ps1   # needs admin rights (reads the Security log)
 .\collectors\Collect-SystemMetrics.ps1
 ```
 
-Planification (une seule fois, en PowerShell **Administrateur**) :
+Scheduling (once, in an elevated **Administrator** PowerShell prompt):
 
 ```powershell
 .\Register-ScheduledTask.ps1
 ```
 
-⚠️ `Register-ScheduledTask.ps1` n'a pas de harnais de test — `Register-ScheduledTask`
-n'existe pas du tout sur macOS/Linux, et un mock n'aurait aucune valeur (il n'y a pas
-de sortie/CSV à vérifier, juste un enregistrement dans le planificateur de tâches
-Windows). À valider uniquement sur le vrai serveur.
+⚠️ `Register-ScheduledTask.ps1` has no test harness — `Register-ScheduledTask`
+doesn't exist at all on macOS/Linux, and a mock would be worthless (there's no
+output/CSV to check, just an entry in the Windows task scheduler). Only validate
+this on the real server.
