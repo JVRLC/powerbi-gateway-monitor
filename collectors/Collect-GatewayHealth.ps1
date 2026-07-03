@@ -1,6 +1,6 @@
 # Collect On-premises data gateway health and append one row to gateway_health.csv.
 
-$serviceName = "PBIEgwService"
+$serviceName = "PBIEgwService" # The name of the service for the On-premises data gateway.
 $dataDir     = Join-Path (Split-Path $PSScriptRoot -Parent) "data"
 $csvPath     = Join-Path $dataDir "gateway_health.csv"
 

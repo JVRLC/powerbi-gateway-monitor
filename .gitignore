@@ -1,0 +1,6 @@
+# Collector output — regenerated at runtime, not source
+data/*.csv
+data/.rdp-last-run
+
+# Real config — commit config.example.json instead
+config/config.json
