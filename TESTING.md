@@ -73,3 +73,14 @@ Exécution réelle des collecteurs (le service `PBIEgwService` doit être instal
 .\collectors\Collect-RdpSessions.ps1   # nécessite des droits admin (lecture du log Security)
 .\collectors\Collect-SystemMetrics.ps1
 ```
+
+Planification (une seule fois, en PowerShell **Administrateur**) :
+
+```powershell
+.\Register-ScheduledTask.ps1
+```
+
+⚠️ `Register-ScheduledTask.ps1` n'a pas de harnais de test — `Register-ScheduledTask`
+n'existe pas du tout sur macOS/Linux, et un mock n'aurait aucune valeur (il n'y a pas
+de sortie/CSV à vérifier, juste un enregistrement dans le planificateur de tâches
+Windows). À valider uniquement sur le vrai serveur.
