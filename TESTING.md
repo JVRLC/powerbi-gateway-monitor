@@ -30,12 +30,18 @@ pwsh ./tests/Test-RdpSessions.Mock.ps1
 
 # Métriques système (CPU/RAM/disque)
 pwsh ./tests/Test-SystemMetrics.Mock.ps1
+
+# Runner (les 3 collecteurs en séquence)
+pwsh ./tests/Test-RunCollectors.Mock.ps1
+
+# Runner — vérifie l'isolation d'erreur (un collecteur échoue, les autres tournent quand même)
+pwsh ./tests/Test-RunCollectors.Mock.ps1 -FailGateway
 ```
 
 ⚠️ Ne jamais lancer directement `pwsh ./collectors/Collect-GatewayHealth.ps1`,
-`Collect-RdpSessions.ps1` ou `Collect-SystemMetrics.ps1` sur macOS — ils échoueront
-avec une erreur du type `Get-Service: term not recognized`. Toujours passer par les
-scripts de `tests/`.
+`Collect-RdpSessions.ps1`, `Collect-SystemMetrics.ps1` ou `Run-Collectors.ps1` sur
+macOS — ils échoueront avec une erreur du type `Get-Service: term not recognized`.
+Toujours passer par les scripts de `tests/`.
 
 ## Vérifier la syntaxe d'un script sans l'exécuter
 
@@ -62,6 +68,7 @@ git log --oneline -5        # voir les derniers commits
 Exécution réelle des collecteurs (le service `PBIEgwService` doit être installé) :
 
 ```powershell
+.\Run-Collectors.ps1                   # lance les 3 collecteurs en séquence
 .\collectors\Collect-GatewayHealth.ps1
 .\collectors\Collect-RdpSessions.ps1   # nécessite des droits admin (lecture du log Security)
 .\collectors\Collect-SystemMetrics.ps1
