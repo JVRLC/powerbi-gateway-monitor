@@ -62,6 +62,10 @@ $env:SystemDrive = "C:"
 $sandbox = Join-Path ([System.IO.Path]::GetTempPath()) ("run-collectors-test-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Path (Join-Path $sandbox "collectors") -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $sandbox "data") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $sandbox "lib") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $sandbox "config") -Force | Out-Null
+Copy-Item (Join-Path $PSScriptRoot "../lib/Config.ps1") (Join-Path $sandbox "lib/")
+Copy-Item (Join-Path $PSScriptRoot "../config/config.example.json") (Join-Path $sandbox "config/")
 
 Copy-Item (Join-Path $PSScriptRoot "../Run-Collectors.ps1") (Join-Path $sandbox "Run-Collectors.ps1")
 Copy-Item (Join-Path $PSScriptRoot "../collectors/Collect-GatewayHealth.ps1") (Join-Path $sandbox "collectors/")

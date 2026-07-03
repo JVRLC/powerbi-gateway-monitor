@@ -1,6 +1,9 @@
-# Collect host CPU/RAM/disk load and append one row to system_metrics.csv.
+﻿# Collect host CPU/RAM/disk load and append one row to system_metrics.csv.
 
-$dataDir = Join-Path (Split-Path $PSScriptRoot -Parent) "data"
+. (Join-Path $PSScriptRoot "../lib/Config.ps1")
+$config = Get-GatewayConfig
+
+$dataDir = Join-Path (Split-Path $PSScriptRoot -Parent) $config.dataDir
 $csvPath = Join-Path $dataDir "system_metrics.csv"
 
 # CPU: average a few samples — a single reading right after the counter opens

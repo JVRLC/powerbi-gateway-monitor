@@ -6,6 +6,21 @@ Windows-only (`Get-Service`, `Get-WinEvent`) qui n'existent pas dans PowerShell 
 sur macOS/Linux — ils ne peuvent donc **pas** être exécutés directement en local.
 C'est pour ça que chaque collecteur a un harnais de test mocké dans `tests/`.
 
+## Config
+
+Les collecteurs lisent `config/config.json` (nom du service, process, dossier de
+sortie, intervalle de la tâche planifiée...). Ce fichier est gitignored — sur le
+serveur réel, il faut le créer une fois à partir de l'exemple versionné :
+
+```powershell
+Copy-Item config\config.example.json config\config.json
+# puis ajuster les valeurs si besoin
+```
+
+En local (mocks) et si `config/config.json` est absent, `lib/Config.ps1` retombe
+automatiquement sur `config.example.json` avec un avertissement — pas besoin de le
+créer pour lancer les tests.
+
 ## Prérequis
 
 PowerShell Core (`pwsh`) doit être installé :
@@ -42,6 +57,24 @@ pwsh ./tests/Test-RunCollectors.Mock.ps1 -FailGateway
 `Collect-RdpSessions.ps1`, `Collect-SystemMetrics.ps1` ou `Run-Collectors.ps1` sur
 macOS — ils échoueront avec une erreur du type `Get-Service: term not recognized`.
 Toujours passer par les scripts de `tests/`.
+
+## Lint (PSScriptAnalyzer)
+
+```bash
+pwsh -NoProfile -Command 'Install-Module PSScriptAnalyzer -Scope CurrentUser -Force'
+
+pwsh -NoProfile -Command '
+Import-Module PSScriptAnalyzer
+Get-ChildItem -Recurse -Filter "*.ps1" -Path . |
+  Where-Object { $_.FullName -notmatch "/tests/" } |
+  Invoke-ScriptAnalyzer -Severity Warning,Error -ExcludeRule PSAvoidUsingWriteHost
+'
+```
+
+Tourne aussi automatiquement en CI (GitHub Actions, `.github/workflows/lint.yml`) sur
+chaque push/PR vers `main`. `PSAvoidUsingWriteHost` est exclu volontairement : les
+collecteurs utilisent `Write-Host` pour leurs messages de statut, et `Write-Output`
+polluerait le flux que `Run-Collectors.ps1` utilise pour détecter les erreurs.
 
 ## Vérifier la syntaxe d'un script sans l'exécuter
 

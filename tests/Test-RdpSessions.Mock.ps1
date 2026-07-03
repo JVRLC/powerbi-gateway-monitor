@@ -49,6 +49,10 @@ function Get-WinEvent {
 $sandbox = Join-Path ([System.IO.Path]::GetTempPath()) ("rdp-test-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Path (Join-Path $sandbox "collectors") -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $sandbox "data") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $sandbox "lib") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $sandbox "config") -Force | Out-Null
+Copy-Item (Join-Path $PSScriptRoot "../lib/Config.ps1") (Join-Path $sandbox "lib/")
+Copy-Item (Join-Path $PSScriptRoot "../config/config.example.json") (Join-Path $sandbox "config/")
 
 $collectorSrc = Join-Path $PSScriptRoot "../collectors/Collect-RdpSessions.ps1"
 $collectorCopy = Join-Path $sandbox "collectors/Collect-RdpSessions.ps1"

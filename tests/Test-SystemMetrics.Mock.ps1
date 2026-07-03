@@ -29,6 +29,10 @@ $env:SystemDrive = "C:"
 $sandbox = Join-Path ([System.IO.Path]::GetTempPath()) ("sysmetrics-test-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Path (Join-Path $sandbox "collectors") -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $sandbox "data") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $sandbox "lib") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $sandbox "config") -Force | Out-Null
+Copy-Item (Join-Path $PSScriptRoot "../lib/Config.ps1") (Join-Path $sandbox "lib/")
+Copy-Item (Join-Path $PSScriptRoot "../config/config.example.json") (Join-Path $sandbox "config/")
 
 $collectorSrc = Join-Path $PSScriptRoot "../collectors/Collect-SystemMetrics.ps1"
 $collectorCopy = Join-Path $sandbox "collectors/Collect-SystemMetrics.ps1"

@@ -1,0 +1,10 @@
+{
+    "serviceName": "PBIEgwService",
+    "processName": "Microsoft.PowerBI.EnterpriseGateway",
+    "dataDir": "data",
+    "rdpLookbackMinutesDefault": 20,
+    "scheduledTask": {
+        "name": "PowerBI Gateway Monitor",
+        "intervalMinutes": 15
+    }
+}

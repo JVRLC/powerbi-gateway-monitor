@@ -1,4 +1,4 @@
-# Collect RDP session and logon events and append rows to rdp_events.csv.
+﻿# Collect RDP session and logon events and append rows to rdp_events.csv.
 #
 # Two sources:
 #   - Microsoft-Windows-TerminalServices-LocalSessionManager/Operational
@@ -9,7 +9,10 @@
 # The Security log requires admin rights to read, so this needs to run
 # as SYSTEM (see the scheduled task setup).
 
-$dataDir   = Join-Path (Split-Path $PSScriptRoot -Parent) "data"
+. (Join-Path $PSScriptRoot "../lib/Config.ps1")
+$config = Get-GatewayConfig
+
+$dataDir   = Join-Path (Split-Path $PSScriptRoot -Parent) $config.dataDir
 $csvPath   = Join-Path $dataDir "rdp_events.csv"
 $stateFile = Join-Path $dataDir ".rdp-last-run"
 
@@ -20,7 +23,7 @@ $now = (Get-Date).ToUniversalTime()
 if (Test-Path $stateFile) {
     $sinceTime = [datetime]::Parse((Get-Content $stateFile -Raw).Trim()).ToUniversalTime()
 } else {
-    $sinceTime = $now.AddMinutes(-20)
+    $sinceTime = $now.AddMinutes(-$config.rdpLookbackMinutesDefault)
 }
 
 function ConvertTo-EventDataMap {
